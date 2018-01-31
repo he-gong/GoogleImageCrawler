@@ -2,7 +2,6 @@
 """
 Platform: windows 10
 Running environment: Python 2.7
-
 Created on Sun Dec 25 2016
 @author: luckycallor(www.luckycallor.com)
 """
@@ -11,6 +10,7 @@ from selenium import webdriver
 import threading
 import socket
 import urllib
+import urllib.parse
 import os
 
 '''
@@ -36,7 +36,7 @@ def getIMGurlsGoogle(search_items,num,bottom,saveDIR,items_per_round):
             driver.quit()
             driver = webdriver.Firefox()
             driver.maximize_window()
-        print '#%d: %s' % (item_cnt, search_item)
+        print('#%d: %s' % (item_cnt, search_item))
         search_item = search_item.split(' ')
         search_item = '+'.join(search_item)
         search_url = 'https://www.google.com/search?aq=f&tbm=isch&q=%s' % search_item
@@ -50,11 +50,11 @@ def getIMGurlsGoogle(search_items,num,bottom,saveDIR,items_per_round):
                 break
             js = "document.documentElement.scrollTop=%d" % pos
             driver.execute_script(js)
-            for element in driver.find_elements_by_tag_name('a'):  
+            for element in driver.find_elements_by_tag_name('a'):
                 href_ori = element.get_attribute('href')
                 if(href_ori == None):
                     continue
-                href_decoded = urllib.unquote(href_ori)
+                href_decoded = urllib.parse.unquote(href_ori)
                 if(href_decoded.find('imgres?imgurl=http') < 0):
                     continue
                 img_url =  href_decoded[href_decoded.find('imgurl=')+len('imgurl='):href_decoded.find('&imgrefurl')]
@@ -98,7 +98,7 @@ def getIMG(fns,readDIR,saveDIR):
                 urllib.urlretrieve(url, saveDIR + '\\' + name + '\\%d.jpg' % count)
             except:
                 continue
-            print 'Downloading: %s ---- #%d' % (name,count)
+            print('Downloading: %s ---- #%d' % (name,count))
 
 '''
 Func@getIMG_mt:
@@ -126,10 +126,10 @@ def getIMG_mt(num_t,readDIR,saveDIR):
         t = threading.Thread(target=getIMG,args=(list(fns[cur_idx:cur_idx+avg]),readDIR,saveDIR))
         threads.append(t)
         cur_idx += avg
-    
+
     for i in range(num_t):
         threads[i].start()
-    
+
     for i in range(num_t):
         threads[i].join()
 
