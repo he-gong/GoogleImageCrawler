@@ -10,7 +10,7 @@ from selenium import webdriver
 import threading
 import socket
 import urllib
-import urllib.parse
+from urllib import parse
 from urllib.request import urlretrieve
 import os
 
@@ -26,6 +26,7 @@ Func@getIMGurlsGoogle:
 '''
 
 def getIMGurlsGoogle(search_items,num,bottom,saveDIR,items_per_round):
+	search_items = search_items[0:5]
 	if(os.path.exists(saveDIR) == False):
 		os.mkdir(saveDIR)
 	driver = webdriver.Firefox()
@@ -33,6 +34,7 @@ def getIMGurlsGoogle(search_items,num,bottom,saveDIR,items_per_round):
 	threshold = items_per_round - 1
 	item_cnt = 0
 	for search_item in search_items:
+		search_item = search_item.strip()
 		if(item_cnt%items_per_round == threshold):
 			driver.quit()
 			driver = webdriver.Firefox()
@@ -44,9 +46,15 @@ def getIMGurlsGoogle(search_items,num,bottom,saveDIR,items_per_round):
 		img_url_set = set()
 		driver.get(search_url)
 		pos = 0
-		cnt = 0
+		cnt = 0 #一共需要的数量
+		if(os.path.exists(saveDIR + '\\' + search_item + '.txt')):
+			continue
+			with(open(saveDIR + '\\' + search_item + '.txt', 'r')) as inf:
+				ans = inf.readlines()
 		ans = []
 		while(True):
+			print("cnt:%d"%cnt)
+			print("pos:%d"%pos)
 			if((cnt >= num) or (pos >= bottom)):
 				break
 			js = "document.documentElement.scrollTop=%d" % pos
@@ -66,7 +74,10 @@ def getIMGurlsGoogle(search_items,num,bottom,saveDIR,items_per_round):
 					if(cnt >= num):
 						break
 			pos += 600
-		f = open(saveDIR + '\\' + search_items[item_cnt] + '.txt', 'w')
+		if(os.path.exists(saveDIR + '\\' + search_item + '.txt')):
+			f = open(saveDIR + '\\' + search_item + '.txt', 'a')
+		else:
+			f = open(saveDIR + '\\' + search_item + '.txt', 'w')
 		for u in ans:
 			f.write(u)
 			f.write('\n')
@@ -96,7 +107,7 @@ def getIMG(fns,readDIR,saveDIR):
 			count += 1
 			socket.setdefaulttimeout(120)
 			try:
-				urlretrieve(url, saveDIR + '\\' + name + '\\%d.jpg' % count)
+				urlretrieve(url, saveDIR + '\\' + name + '\\%04d.jpg' % count)
 			except:
 				continue
 			print('Downloading: %s ---- #%d' % (name,count))
@@ -136,8 +147,10 @@ def getIMG_mt(num_t,readDIR,saveDIR):
 
 if __name__ == '__main__':
 	# example:
-	url_saveDIR = r'G:\\myDIR\\urls'
-	img_saveDIR = r'G:\\myDIR\\images'
-	search_items = ['Scarlett Johansson', 'Benedict Cumberbatch']
-	#getIMGurlsGoogle(search_items = search_items, num = 100,bottom = 10000,saveDIR = url_saveDIR,items_per_round = 10)
+	url_saveDIR = r'C:\D\My Project\github\GoogleImageCrawler\myDIR\urls'
+	img_saveDIR = r'C:\D\My Project\github\GoogleImageCrawler\myDIR\images'
+	with open("keylist.txt", "r") as inf:
+		search_items = inf.readlines()
+	#search_items = ['Scarlett Johansson', 'Benedict Cumberbatch']
+	#getIMGurlsGoogle(search_items = search_items, num = 500,bottom = 14000,saveDIR = url_saveDIR,items_per_round = 1)
 	getIMG_mt(num_t = 2,readDIR = url_saveDIR,saveDIR = img_saveDIR)
